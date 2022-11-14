@@ -1,0 +1,106 @@
+<html>
+<head>
+    <style type="text/css">
+        #chart_wrapper {
+            overflow-x: scroll;
+            overflow-y: hidden;
+            width: 100%;
+        }
+
+    </style>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script type="text/javascript">
+        google.charts.load("current", {packages:["timeline"]});
+        google.charts.setOnLoadCallback(drawChart);
+        var start=0;
+        var end=1;
+        var options = function (data) {
+            return {
+                width: 1000+ (end - start),
+                height: 1000,
+                bar: {groupWidth: 20},
+
+            };
+        };
+
+        var keys = new Set();
+        function convertData(json) {
+            if (!start) start = json.queued;
+            end = json.ended
+            return [
+                [
+                    json.eventName,
+                    json.eventId+"-Q",
+                    new Date(json.queued),
+                    new Date(json.started)
+                ],
+                [
+                    json.eventName,
+                    json.eventId+"P",
+                    new Date(json.started),
+                    new Date(json.ended)
+                ]
+            ];
+        }
+        function drawChart() {
+
+            var container = document.getElementById('example3.1');
+            chart = new google.visualization.Timeline(container);
+            dataTable = new google.visualization.DataTable();
+            dataTable.addColumn({ type: 'string', id: 'Position' });
+            dataTable.addColumn({ type: 'string', id: 'Name' });
+            dataTable.addColumn({ type: 'date', id: 'Start' });
+            dataTable.addColumn({ type: 'date', id: 'End' });
+
+
+            fetch("/test").then(function(response) {
+                return response.json();
+            }).then(function(data) {
+                 console.log(data);
+                data.map(convertData).forEach((e) => {dataTable.addRows(e)});
+                console.log(data);
+                console.log(dataTable);
+                chart.draw(dataTable, options(dataTable));
+            });
+
+            // dataTable.addRows([
+            // [ 'CREATE', 'event1_Q', new Date(1662915197517), new Date(1662915197518) ],
+            // [ 'CREATE', 'event1_Process', new Date(1662915197518), new Date(1662915197527) ],
+            // [ 'BARCODE_LINE', 'John Adams', new Date(2022, 9, 14, 12, 0, 2), new Date(2022, 9, 14, 12, 0, 4)],
+            // [ 'BARCODE_LINE', 'Thomas Jefferson', new Date(2022, 9, 14, 12, 0, 3), new Date(2022, 9, 14, 12, 0, 9)]
+            // ]);
+
+            // chart.draw(dataTable, options(dataTable));
+        }
+
+
+        // var i=1662915197527;
+        //   setInterval(function() {
+        //   	i = i+ 1;
+        //   	console.log("Trying to add");
+        //   dataTable.addRows([
+        //       [ 'CREATE', 'John Adams', new Date(i), new Date(i+1) ],
+        //       // [ 'BARCODE_LINE', 'Thomas Jefferson', new Date(2022, 9, 14, 12, 1, 2), new Date(2022, 9, 14, 12, 1, 5) ]
+        //       ]);
+        //   end = i;
+        //   chart.draw(dataTable, options(dataTable));
+
+
+        //   }, 1000);
+
+
+
+
+
+
+
+    </script>
+</head>
+<body>
+<div id="chart_wrapper">
+
+    <div id="example3.1"></div>
+</div>
+</body>
+</html>
